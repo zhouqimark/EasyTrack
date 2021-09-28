@@ -7,9 +7,9 @@ import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.ComponentActivity
 import androidx.annotation.IdRes
 import androidx.annotation.MainThread
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.view.ViewCompat
 import androidx.fragment.app.DialogFragment
@@ -57,6 +57,7 @@ fun trackNode(fragment: Fragment): TrackModel {
 // -------------------------------------------------------------------------------------
 // Kotlin TrackNodeProperty
 // -------------------------------------------------------------------------------------
+fun <A : AppCompatActivity> A.track(): TrackNodeProperty<A> = ActivityTrackNodeProperty()
 
 fun <F : Fragment> F.track(): TrackNodeProperty<F> = FragmentTrackNodeProperty()
 
@@ -65,14 +66,13 @@ fun RecyclerView.ViewHolder.track(): TrackNodeProperty<RecyclerView.ViewHolder> 
         return@viewFactory itemView
     }
 
-fun View.track(): TrackNodeProperty<View> = LazyTrackNodeProperty() viewFactory@{
-    return@viewFactory it
+fun View.track(): TrackNodeProperty<View> = LazyTrackNodeProperty {
+    return@LazyTrackNodeProperty it
 }
 
 // -------------------------------------------------------------------------------------
 // TrackNodeProperty
 // -------------------------------------------------------------------------------------
-
 private const val TAG = "TrackNodeProperty"
 
 interface TrackNodeProperty<in R : Any> : ReadOnlyProperty<R, TrackModel> {
@@ -89,6 +89,9 @@ interface TrackNodeProperty<in R : Any> : ReadOnlyProperty<R, TrackModel> {
     fun clear()
 }
 
+/**
+ * Lifecycle Irrelevant TrackNodeProperty, Lazy
+ */
 class LazyTrackNodeProperty<in R : Any>(
     private val viewFactory: (R) -> View
 ) : TrackNodeProperty<R> {
@@ -103,6 +106,7 @@ class LazyTrackNodeProperty<in R : Any>(
 
         return TrackModel().also {
             this.trackNode = it
+            getViewNode(thisRef).trackModel = trackNode
         }
     }
 
@@ -114,6 +118,9 @@ class LazyTrackNodeProperty<in R : Any>(
     override fun getViewNode(thisRef: R) = viewFactory(thisRef)
 }
 
+/**
+ * Lifecycle Relevant TrackNodeProperty, Lazy
+ */
 abstract class LifecycleTrackNodeProperty<in R : Any> : TrackNodeProperty<R> {
 
     private var trackNode: TrackModel? = null
@@ -161,6 +168,17 @@ abstract class LifecycleTrackNodeProperty<in R : Any> : TrackNodeProperty<R> {
             mainHandler.post { property.clear() }
         }
     }
+}
+
+class ActivityTrackNodeProperty<in A : AppCompatActivity> : LifecycleTrackNodeProperty<A>() {
+    override fun getViewNode(thisRef: A): View {
+        return thisRef.requireRootView()
+    }
+
+    override fun getLifecycleOwner(thisRef: A): LifecycleOwner {
+        return thisRef
+    }
+
 }
 
 class FragmentTrackNodeProperty<in F : Fragment> : LifecycleTrackNodeProperty<F>() {
@@ -211,11 +229,17 @@ private fun <V : View> Activity.requireViewByIdCompat(@IdRes id: Int): V {
 /**
  * Utility to find root view for ViewBinding in Activity
  */
+private fun Activity?.requireRootView(): View {
+    return findRootView(this)
+        ?: throw IllegalStateException(
+            "Activity $this did not setup a View from onCreated() or this was called before onCreated()."
+        )
+}
+
 private fun findRootView(activity: Activity?): View? {
     val contentView = activity?.findViewById<ViewGroup>(android.R.id.content)
     return when (contentView?.childCount) {
         1 -> contentView.getChildAt(0)
-        0 -> null
         else -> null
     }
 }
@@ -235,19 +259,19 @@ private fun DialogFragment.getRootView(viewBindingRootId: Int): View {
 /**
  * Params from referrer page note.
  */
-fun Intent.setReferrerSnapshot(node: ITrackModel?) {
+fun Intent.setReferrerParams(node: ITrackModel?) {
     if (null != node) {
-        setReferrerSnapshot(fillTrackParams(node))
+        setReferrerParams(fillTrackParams(node))
     }
 }
 
-fun Intent.setReferrerSnapshot(node: View?) {
+fun Intent.setReferrerParams(node: View?) {
     if (null != node) {
-        setReferrerSnapshot(fillTrackParams(node))
+        setReferrerParams(fillTrackParams(node))
     }
 }
 
-fun Intent.setReferrerSnapshot(params: TrackParams?) {
+fun Intent.setReferrerParams(params: TrackParams?) {
     if (null != params) {
         putExtra(EXTRA_REFERRER_SNAPSHOT, params)
     }

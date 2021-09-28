@@ -99,6 +99,7 @@ internal fun Any.doTrackEvent(eventName: String, otherParams: TrackParams? = nul
 
 /**
  * Collect data recursively
+ * 基于视图树递归收集埋点参数
  */
 internal fun fillTrackParams(node: Any?, params: TrackParams? = null): TrackParams {
     val result = params ?: TrackParams()
@@ -117,6 +118,7 @@ internal fun fillTrackParams(node: Any?, params: TrackParams? = null): TrackPara
                         curNode = null
                     }
                 } else {
+                    // 视图子节点
                     // View node
                     curNode.trackModel?.fillTrackParams(result)
                     curNode = curNode.parent

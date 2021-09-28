@@ -1,14 +1,16 @@
 package com.pengxr.easytrack.impl
 
 import android.os.Bundle
+import android.view.ViewGroup
 import androidx.annotation.CallSuper
 import androidx.annotation.LayoutRes
 import androidx.appcompat.app.AppCompatActivity
+import com.pengxr.easytrack.core.EasyTrack
 import com.pengxr.easytrack.core.IPageTrackNode
 import com.pengxr.easytrack.core.ITrackNode
-import com.pengxr.easytrack.core.EasyTrack
 import com.pengxr.easytrack.core.TrackParams
 import com.pengxr.easytrack.util.getReferrerParams
+import com.pengxr.easytrack.util.trackModel
 
 /**
  * Base Activity with event track，you don't have to used it.
@@ -35,6 +37,10 @@ abstract class BaseTrackActivity : AppCompatActivity, IPageTrackNode {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        setContentView(getRootLayoutRes())
+        val rootView = findViewById<ViewGroup>(android.R.id.content)
+        rootView.trackModel = this
+
         // Snapshot for referrer page node.
         getReferrerSnapshot()?.let { referrerParams ->
             referrerSnapshot = object : ITrackNode {
@@ -46,6 +52,9 @@ abstract class BaseTrackActivity : AppCompatActivity, IPageTrackNode {
             }
         }
     }
+
+    abstract fun getRootLayoutRes(): Int
+
 
     // ---------------------------------------------------------------------------------------------
     // public

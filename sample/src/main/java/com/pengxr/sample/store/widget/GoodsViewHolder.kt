@@ -11,6 +11,7 @@ import android.view.ViewOutlineProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.pengxr.easytrack.util.track
 import com.pengxr.easytrack.util.trackEvent
+import com.pengxr.easytrack.util.trackModel
 import com.pengxr.ktx.delegate.viewBinding
 import com.pengxr.sample.R
 import com.pengxr.sample.databinding.StoreHomeGoodsItemBinding

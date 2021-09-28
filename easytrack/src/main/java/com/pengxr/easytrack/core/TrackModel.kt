@@ -4,7 +4,7 @@ import androidx.annotation.CallSuper
 import java.io.Serializable
 
 /**
- * 数据节点
+ * 数据节点操作类
  * Created by pengxr on 2021/8/18.
  */
 class TrackModel : ITrackModel, Serializable {

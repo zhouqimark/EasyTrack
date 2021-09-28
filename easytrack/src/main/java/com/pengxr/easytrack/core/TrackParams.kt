@@ -6,13 +6,8 @@ import java.io.Serializable
  * Track Params attach on the node
  * Created by pengxr on 2021/8/18.
  */
-open class TrackParams : Iterable<Any?>, Serializable {
-
-    /**
-     * Internal data.
-     */
-    private val data = HashMap<String, String?>()
-
+open class TrackParams(private val data: HashMap<String, String?> = hashMapOf()) : Serializable,
+    Map<String, String?> by data {
     /**
      * Set anywhere.
      */
@@ -24,7 +19,7 @@ open class TrackParams : Iterable<Any?>, Serializable {
     /**
      * Get by key.
      */
-    operator fun get(key: String): String? = data[key]
+    override operator fun get(key: String): String? = data[key]
 
     /**
      * Set if null.
@@ -57,7 +52,7 @@ open class TrackParams : Iterable<Any?>, Serializable {
     /**
      * Create an iterator.
      */
-    override fun iterator() = data.iterator()
+//    operator fun iterator() = data.iterator()
 
     override fun toString(): String {
         return StringBuilder().apply {

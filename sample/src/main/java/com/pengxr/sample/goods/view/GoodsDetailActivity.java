@@ -41,7 +41,7 @@ public class GoodsDetailActivity extends BaseActivity {
     public static void start(Context context, GoodsItem item, TrackParams params) {
         Intent intent = new Intent(context, GoodsDetailActivity.class);
         intent.putExtra(EXTRA_GOODS, item);
-        EasyTrackUtilsKt.setReferrerSnapshot(intent, params);
+        EasyTrackUtilsKt.setReferrerParams(intent, params);
         context.startActivity(intent);
     }
 
